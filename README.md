@@ -129,3 +129,8 @@ blender --background --factory-startup --python arte/pato/animar_pato.py -- arte
 
 [Godot](https://godotengine.org) · [Blender](https://www.blender.org) ·
 Python + NumPy/SciPy (trilha e efeitos sintetizados) · ffmpeg
+
+## 📜 Licença
+
+© 2026 rian144hz — todos os direitos reservados. O código está aberto para leitura e para quem
+colabora com o projeto; veja [LICENSE](LICENSE).
