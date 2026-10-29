@@ -226,7 +226,7 @@ bm = bmesh.new()
 bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=0.15, radius2=0.0, depth=0.32)
 bmesh.ops.translate(bm, vec=(0, 0, 0.16), verts=bm.verts)
 bmesh.ops.scale(bm, vec=(1.0, 0.45, 1.0), verts=bm.verts)
-criar_objeto("PenaRabo", bm, M["penas"], loc=(0, 0.36, 0.76), rot=(-55, 0, 0))
+criar_objeto("PenaRabo", bm, M["penas"], loc=(0, 0.36, 0.55), rot=(-70, 0, 0))  # abaixo da bolsa
 
 # ---------------------------------------------------------------- pernas e pés
 for lado in (-1, 1):
@@ -414,6 +414,102 @@ for lado in (-1, 1):
     o = bpy.data.objects.new(f"Alca.{'E' if lado < 0 else 'D'}", me_alca)
     o.location = centro
     colecao.objects.link(o)
+
+# ---------------------------------------------------------------- bolsa nas costas (bolso de jeans + cadarço)
+M["jeans"] = material("Jeans", "4E6E98", 0.9)
+M["jeans_escuro"] = material("JeansEscuro", "42608A", 0.9)
+M["costura_laranja"] = material("CosturaLaranja", "E0781F")
+M["cadarco"] = material("Cadarco", "EDEDED", 0.8)
+M["latao"] = material("Latao", "C9A227", 0.35)
+M["latao"].node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 0.8
+
+LARG_BOLSA, ALT_BOLSA, PROF_BOLSA = 0.50, 0.38, 0.15
+alto, _ = superficie(Vector((0, 0.05, 1.08)), (0, 1, 0))
+baixo, _ = superficie(Vector((0, 0.05, 0.74)), (0, 1, 0))
+# a bolsa acompanha a inclinação das costas: "cima" vai do ponto de baixo ao de cima
+cima = (alto - baixo).normalized()
+inclinacao = -math.asin(cima.y)                       # rotação em X que leva +Z para "cima"
+fora = Vector((0, math.cos(inclinacao), math.sin(inclinacao)))  # para trás, saindo das costas
+centro_bolsa = (alto + baixo) / 2 + fora * (PROF_BOLSA / 2 - 0.01)
+rot_bolsa = (math.degrees(inclinacao), 0, 0)
+
+
+def caixa_arredondada(dims, chanfro):
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bmesh.ops.scale(bm, vec=dims, verts=bm.verts)
+    bmesh.ops.bevel(bm, geom=list(bm.edges), offset=chanfro, segments=3, affect="EDGES")
+    return bm
+
+
+def na_bolsa(x, altura, saida):
+    """Ponto na bolsa: x para o lado, altura a partir do centro, saida para fora da face."""
+    return centro_bolsa + Vector((x, 0, 0)) + cima * altura + fora * saida
+
+
+criar_objeto("Bolsa", caixa_arredondada((LARG_BOLSA, PROF_BOLSA, ALT_BOLSA), 0.035),
+             M["jeans"], loc=centro_bolsa, rot=rot_bolsa)
+ALT_ABA = ALT_BOLSA * 0.42
+criar_objeto("BolsaAba", caixa_arredondada((LARG_BOLSA + 0.012, 0.025, ALT_ABA), 0.01), M["jeans_escuro"],
+             loc=na_bolsa(0, ALT_BOLSA / 2 - ALT_ABA / 2 + 0.005, PROF_BOLSA / 2 + 0.006), rot=rot_bolsa)
+bm = bmesh.new()
+bmesh.ops.create_cone(bm, cap_ends=True, segments=12, radius1=0.026, radius2=0.026, depth=0.016)
+criar_objeto("BolsaBotao", bm, M["latao"], loc=na_bolsa(0, ALT_BOLSA / 2 - ALT_ABA + 0.02, PROF_BOLSA / 2 + 0.022),
+             rot=(math.degrees(inclinacao) - 90, 0, 0))
+
+# pesponto laranja: lados e fundo da bolsa, e a borda de baixo da aba
+pontos = []
+borda_x, borda_baixo, topo_lados = LARG_BOLSA / 2 - 0.04, -ALT_BOLSA / 2 + 0.04, ALT_BOLSA / 2 - ALT_ABA - 0.02
+x = -borda_x + 0.02
+while x < borda_x:
+    pontos.append(((x, borda_baixo), (0.035, 0.012)))
+    pontos.append(((x, ALT_BOLSA / 2 - ALT_ABA + 0.035), (0.035, 0.012)))
+    x += 0.065
+z = borda_baixo + 0.05
+while z < topo_lados:
+    for lado in (-1, 1):
+        pontos.append(((lado * borda_x, z), (0.012, 0.035)))
+    z += 0.065
+for i, ((x, z), (dx, dz)) in enumerate(pontos):
+    saida = PROF_BOLSA / 2 + (0.02 if z > topo_lados else 0.003)
+    criar_objeto(f"PontoBolsa.{i}", caixa_arredondada((dx, 0.008, dz), 0.002), M["costura_laranja"],
+                 loc=na_bolsa(x, z, saida), rot=rot_bolsa)
+
+# alças de cadarço: saem do topo da bolsa, passam por cima dos ombros, descem pela frente
+# e voltam contornando o corpo por baixo das asas até o fundo da bolsa
+def pele_de_dentro(miolo, direcao):
+    """Ponto onde um raio que sai de DENTRO do corpo atravessa a pele, um pouco para fora."""
+    saida, _, _, _ = bvh.ray_cast(miolo, direcao)
+    return saida + direcao * 0.015 if saida else None
+
+
+for lado in (-1, 1):
+    trajeto = [na_bolsa(lado * (LARG_BOLSA / 2 - 0.07), ALT_BOLSA / 2 - 0.02, PROF_BOLSA / 2 - 0.02)]
+    miolo = Vector((lado * 0.26, 0.02, 0.88))
+    for k in range(14):                                 # costas → ombro → desce pela frente
+        angulo = math.radians(55 + 175 * k / 13)
+        trajeto.append(pele_de_dentro(miolo, Vector((0, math.cos(angulo), math.sin(angulo)))))
+    miolo_baixo = Vector((0, 0.05, trajeto[-1].z))
+    for k in range(1, 8):                               # frente → lado (embaixo da asa) → costas
+        angulo = math.radians(20 + 140 * k / 7)
+        trajeto.append(pele_de_dentro(miolo_baixo, Vector((lado * math.sin(angulo), -math.cos(angulo), 0))))
+    trajeto = [p for p in trajeto if p is not None]
+    trajeto.append(na_bolsa(lado * (LARG_BOLSA / 2 - 0.07), -ALT_BOLSA / 2 + 0.03, PROF_BOLSA / 2 - 0.02))
+    curva = bpy.data.curves.new(f"CordaBolsa.{lado}", "CURVE")
+    curva.dimensions = "3D"
+    curva.bevel_depth = 0.017
+    curva.bevel_resolution = 2
+    spl = curva.splines.new("POLY")
+    spl.points.add(len(trajeto) - 1)
+    for ponto, p in zip(spl.points, trajeto):
+        ponto.co = (p.x, p.y, p.z, 1)
+    obj = bpy.data.objects.new(f"CordaCurva.{lado}", curva)
+    scene.collection.objects.link(obj)
+    dg = bpy.context.evaluated_depsgraph_get()
+    me_corda = bpy.data.meshes.new_from_object(obj.evaluated_get(dg))
+    bpy.data.objects.remove(obj)
+    me_corda.materials.append(M["cadarco"])
+    colecao.objects.link(bpy.data.objects.new(f"CordaBolsa.{'E' if lado < 0 else 'D'}", me_corda))
 
 # ---------------------------------------------------------------- acabamento suave (esfumado)
 # Sombreado liso em tudo; subdivisão só nas partes orgânicas. Pés e pernas ficam retos.
