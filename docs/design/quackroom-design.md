@@ -50,8 +50,8 @@ redor e enche a barra de sono do dono.
 
 | Ação | Tecla | Efeito |
 |---|---|---|
-| Andar | WASD | Pato olha para onde a câmera aponta; A/D andam de lado |
-| Câmera | Mouse | Gira em volta do pato |
+| Andar | WASD | Andando, o pato vira suave para onde a câmera aponta; A/D andam de lado |
+| Câmera | Mouse | Gira livre em volta do pato (parado, dá para ver a cara dele) |
 | Correr | Shift | Mais rápido, mais barulho |
 | Agachar | Ctrl | Quase silencioso, passa embaixo de móveis |
 | Pular / planar | Espaço | Pulinho; segurando, plana devagar na descida |
@@ -134,7 +134,7 @@ host sorteia uma *seed* e todos montam a mesma casa a partir dela.
 
 | Quem | Como funciona |
 |---|---|
-| Pato (jogador) | `CharacterBody3D`, câmera em `SpringArm3D`, animações escolhidas pela velocidade |
+| Pato (jogador) | `CharacterBody3D`, câmera livre em `SpringArm3D`, animações misturadas num `AnimationTree` (BlendSpace2D) + inclinação/amassado por código |
 | Sonâmbulo | Máquina de estados: Rotina → Investigar som → Agarrar → Acordar; `NavigationAgent3D` |
 | Patinhos | Escondido → Seguindo → Salvo; cada um segue quem está à frente na fila |
 

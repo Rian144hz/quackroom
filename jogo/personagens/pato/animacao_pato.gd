@@ -1,28 +1,26 @@
-## Decide qual animação o pato toca a partir do movimento.
-## Lógica pura (sem nós), para poder ser testada sozinha.
+## Contas das animações do pato: onde ele está no blend space, ritmo das patinhas e amassado.
+## Lógica pura (sem nós), testada em testes/teste_animacao_pato.gd.
 class_name AnimacaoPato
 extends RefCounted
 
 ## Velocidade (m/s) em que as animações de andar foram feitas para tocar no ritmo normal.
 const VELOCIDADE_REFERENCIA := 1.2
-## Abaixo disso o pato conta como parado.
-const LIMIAR_PARADO := 0.15
 
 
-## velocidade_local: velocidade no referencial do pato (-Z é a frente, +X é a direita dele).
-static func escolher(velocidade_local: Vector3, no_chao: bool, agachado: bool) -> StringName:
-	if not no_chao:
-		return &"pular"
-	if agachado:
-		return &"agachar"
-	var plano := Vector2(velocidade_local.x, velocidade_local.z)
-	if plano.length() < LIMIAR_PARADO:
-		return &"parado"
-	if absf(plano.y) >= absf(plano.x):
-		return &"andar_frente" if plano.y < 0.0 else &"andar_tras"
-	return &"andar_direita" if plano.x > 0.0 else &"andar_esquerda"
+## Converte a velocidade (referencial do pato: -Z frente, +X direita) para o BlendSpace2D:
+## centro = parado, +Y = andar_frente, -Y = andar_tras, +X = andar_direita, -X = andar_esquerda.
+## Velocidades acima de andar ficam na borda; quem acelera as perninhas é o ritmo().
+static func posicao_blend(velocidade_local: Vector3) -> Vector2:
+	var plano := Vector2(velocidade_local.x, -velocidade_local.z) / VELOCIDADE_REFERENCIA
+	return plano.limit_length(1.0)
 
 
 ## Velocidade de reprodução: correndo, as perninhas batem mais rápido.
 static func ritmo(velocidade_plana: float) -> float:
-	return clampf(velocidade_plana / VELOCIDADE_REFERENCIA, 0.5, 2.2)
+	return clampf(velocidade_plana / VELOCIDADE_REFERENCIA, 1.0, 2.2)
+
+
+## Escala do "amassado": positivo achata (pouso), negativo estica (pulo).
+## Alarga dos lados metade do que achata, para parecer que o volume se mantém.
+static func amassado(intensidade: float) -> Vector3:
+	return Vector3(1.0 + intensidade / 2.0, 1.0 - intensidade, 1.0 + intensidade / 2.0)

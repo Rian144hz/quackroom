@@ -1,6 +1,6 @@
 ## Demo automática: "joga sozinha" para conferir animações e câmera sem precisar jogar.
 ## Grava em quadros PNG com o Movie Maker do Godot:
-##   godot --path jogo --write-movie /tmp/demo/pato.png --fixed-fps 30 --quit-after 345 res://testes/visual/demo_pato.tscn
+##   godot --path jogo --write-movie /tmp/demo/pato.png --fixed-fps 30 --quit-after 420 res://testes/visual/demo_pato.tscn
 extends Node
 
 ## [ação, começa (s), termina (s)]
@@ -33,7 +33,9 @@ func _physics_process(delta: float) -> void:
 		elif not ligadas.has(acao) and Input.is_action_pressed(acao):
 			Input.action_release(acao)
 	if _tempo > 4.4 and _tempo < 6.0:
-		_mouse(Vector2(5, 0))  # gira a câmera enquanto corre
+		_mouse(Vector2(5, 0))  # gira a câmera enquanto corre: o pato vira junto, suave
+	if _tempo > 11.2 and _tempo < 13.4:
+		_mouse(Vector2(-9, 0))  # parado: a câmera dá a volta e mostra a cara do pato
 	for quack in QUACKS:
 		if _passou(quack[0], delta):
 			_quack(true)

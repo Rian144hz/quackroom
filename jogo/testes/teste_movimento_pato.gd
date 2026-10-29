@@ -27,3 +27,10 @@ func test_velocidades() -> void:
 func test_quack_curto_ou_forte() -> void:
 	igual(MovimentoPato.quack_forte(0.1), false, "clique rápido:")
 	igual(MovimentoPato.quack_forte(0.4), true, "segurou:")
+
+
+func test_suavizar_nao_depende_do_fps() -> void:
+	perto(MovimentoPato.suavizar(10.0, 0.0), 0.0, "sem tempo, não anda:")
+	verdadeiro(MovimentoPato.suavizar(10.0, 1.0) > 0.99, "com bastante tempo, chega")
+	var meio := MovimentoPato.suavizar(10.0, 1.0 / 120.0)
+	perto(1.0 - (1.0 - meio) * (1.0 - meio), MovimentoPato.suavizar(10.0, 1.0 / 60.0), "2 quadros a 120 fps = 1 a 60 fps:")

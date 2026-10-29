@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://personagens/pato/pato.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://personagens/pato/pato.glb" id="2_modelo"]
@@ -7,6 +7,9 @@
 radius = 0.16
 height = 0.52
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_camera"]
+radius = 0.08
+
 [node name="Pato" type="CharacterBody3D"]
 script = ExtResource("1_script")
 
@@ -14,13 +17,17 @@ script = ExtResource("1_script")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.26, 0)
 shape = SubResource("CapsuleShape3D_corpo")
 
-[node name="Modelo" parent="." instance=ExtResource("2_modelo")]
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Modelo" parent="Visual" instance=ExtResource("2_modelo")]
 transform = Transform3D(-0.25, 0, 0, 0, 0.25, 0, 0, 0, -0.25, 0, 0, 0)
 
 [node name="PivoCamera" type="Node3D" parent="."]
+top_level = true
 transform = Transform3D(1, 0, 0, 0, 0.9659, -0.2588, 0, 0.2588, 0.9659, 0, 0.45, 0)
 
 [node name="Braco" type="SpringArm3D" parent="PivoCamera"]
+shape = SubResource("SphereShape3D_camera")
 spring_length = 1.4
 margin = 0.05
 

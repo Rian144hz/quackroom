@@ -24,3 +24,9 @@ static func velocidade_alvo(correndo: bool, agachado: bool) -> float:
 
 static func quack_forte(segundos_segurando: float) -> bool:
 	return segundos_segurando >= SEGUNDOS_QUACK_FORTE
+
+
+## Peso para lerp() que dá o mesmo resultado em qualquer FPS.
+## rapidez: quanto maior, mais rápido chega no alvo (10 = ~90% em 0,23 s).
+static func suavizar(rapidez: float, delta: float) -> float:
+	return 1.0 - exp(-rapidez * delta)

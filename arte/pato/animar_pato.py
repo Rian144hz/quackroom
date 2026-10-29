@@ -149,50 +149,72 @@ def abrir_asas(graus_l, graus_r=None):
     return {"asa.L": dict(rot=(0, -graus_l, 0)), "asa.R": dict(rot=(0, graus_r, 0))}
 
 
-# ---------------------------------------------------------------- parado (respira e olha em volta)
+# ---------------------------------------------------------------- utilitários de "vida"
+# Ações sobrepostas: cabeça e asas seguem o corpo com um pequeno ATRASO (fase), o que tira a
+# cara de robô — nada para e começa ao mesmo tempo.
+def asas(abre_l, abre_r, balanca_l=0.0, balanca_r=0.0):
+    """abre: para fora (graus); balanca: ponta da asa para trás (+) ou para frente (-)."""
+    return {"asa.L": dict(rot=(balanca_l, -abre_l, 0)), "asa.R": dict(rot=(balanca_r, abre_r, 0))}
+
+
+def onda(p, ciclos=1.0, atraso=0.0):
+    return math.sin(2 * math.pi * ciclos * p - atraso)
+
+
+# ---------------------------------------------------------------- parado (respira, muda o peso, olha em volta)
 acao = nova_animacao("parado", 48)
-for q in range(0, 49, 6):
+for q in range(0, 49, 4):
     p = q / 48
-    s = math.sin(2 * math.pi * p)
+    respira = onda(p)
     poses = {
-        "corpo": dict(escala=(1 - 0.01 * s, 1 + 0.02 * s, 1 - 0.01 * s)),
-        "cabeca": dict(rot=(2 * math.sin(4 * math.pi * p), 0, 8 * s)),
-        **abrir_asas(3 + 2 * s),
+        "corpo": dict(rot=(1.5 * onda(p, 2, 0.4), 2 * onda(p), 0),
+                      escala=(1 - 0.012 * respira, 1 + 0.025 * respira, 1 - 0.012 * respira)),
+        "cabeca": dict(rot=(3 * onda(p, 2, 1.0), 5 * onda(p, 1, -1.2), 10 * onda(p, 1, 0.6))),
+        **asas(3 + 2.5 * onda(p, 1, 0.5), 3 + 2.5 * onda(p, 1, 0.5)),
     }
     chave(q, poses)
 fechar_animacao(acao, 48, True)
 
 
 # ---------------------------------------------------------------- andar (4 direções, gingado de pato)
-def passo(p, amplitude, altura):
-    """Uma perna num ciclo: apoio (0–0.5) empurra o chão; balanço (0.5–1) levanta e volta."""
+def perna(p, amplitude, altura):
+    """Uma perna num ciclo. Apoio (0–0.5): empurra o chão, o pé rola do calcanhar à ponta.
+    Balanço (0.5–1): levanta, a ponta do pé cai e volta para a frente."""
     if p < 0.5:
-        return -amplitude + 2 * amplitude * (p / 0.5), 0.0
-    s = (p - 0.5) / 0.5
-    return amplitude - 2 * amplitude * s, altura * math.sin(math.pi * s)
+        t = p / 0.5
+        return -amplitude + 2 * amplitude * t, 0.0, -10 + 28 * t
+    t = (p - 0.5) / 0.5
+    return amplitude - 2 * amplitude * t, altura * math.sin(math.pi * t), 18 * (1 - t) + 22 * math.sin(math.pi * t) - 10 * t
 
 
 def andar(nome, eixo, sentido, inclinacao):
     """eixo 0 = passada para frente/trás, 1 = passada de lado; inclinacao = (x, y) do corpo."""
     acao = nova_animacao(nome, 24)
     amplitude = 24 if eixo == 0 else 14
-    altura = 0.07
-    for q in range(0, 25, 3):
+    altura = 0.08
+    for q in range(0, 25, 2):
         p = q / 24
         poses = {}
+        angulos = {}
         for lado, fase in (("L", 0.0), ("R", 0.5)):
-            ang, sobe = passo((p + fase) % 1.0, amplitude, altura)
+            ang, sobe, pe = perna((p + fase) % 1.0, amplitude, altura)
+            angulos[lado] = ang * sentido
             rot = [0.0, 0.0, 0.0]
             rot[eixo] = ang * sentido
             poses[f"perna.{lado}"] = dict(rot=tuple(rot), loc=(0, 0, sobe))
-            poses[f"pe.{lado}"] = dict(rot=(25 * sobe / altura, 0, 0))   # ponta do pé cai ao levantar
-        ginga = math.sin(2 * math.pi * p)          # +1: apoiado na perna esquerda
+            poses[f"pe.{lado}"] = dict(rot=(pe if eixo == 0 else 25 * sobe / altura, 0, 0))
+        ginga = onda(p)                                  # +1: apoiado na perna esquerda
+        pisada = math.cos(4 * math.pi * p)               # +1 quando um pé toca o chão
         poses["corpo"] = dict(
-            rot=(inclinacao[0], 7 * ginga + inclinacao[1], 4 * math.cos(2 * math.pi * p)),
-            loc=(0, 0, 0.025 * abs(ginga)),
+            rot=(inclinacao[0] + 2.5 * onda(p, 2, -0.5), 9 * ginga + inclinacao[1], 5 * math.cos(2 * math.pi * p)),
+            loc=(0, 0, 0.03 * abs(ginga)),
+            escala=(1 + 0.018 * pisada, 1 - 0.035 * pisada, 1 + 0.018 * pisada),  # amassa ao pisar
         )
-        poses["cabeca"] = dict(rot=(3 * math.sin(4 * math.pi * p), -4 * ginga, 0))
-        poses.update(abrir_asas(6 + 8 * max(0.0, -ginga), 6 + 8 * max(0.0, ginga)))
+        poses["cabeca"] = dict(rot=(4 * onda(p, 2, 0.9), -6 * onda(p, 1, 0.6), -3 * math.cos(2 * math.pi * p - 0.6)))
+        ginga_atrasada = onda(p, 1, 0.4)
+        balanco = 0.33 if eixo == 0 else 0.0            # asas balançam como braços, ao contrário das pernas
+        poses.update(asas(6 + 7 * max(0.0, -ginga_atrasada), 6 + 7 * max(0.0, ginga_atrasada),
+                          -balanco * angulos["L"], -balanco * angulos["R"]))
         chave(q, poses)
     fechar_animacao(acao, 24, True)
 
@@ -202,16 +224,17 @@ andar("andar_tras", 0, -1, (-4, 0))
 andar("andar_esquerda", 1, 1, (0, 4))
 andar("andar_direita", 1, -1, (0, -4))
 
-# ---------------------------------------------------------------- agachar (pose baixa, andando escondido)
-acao = nova_animacao("agachar", 24)
-for q in range(0, 25, 6):
-    s = math.sin(2 * math.pi * q / 24)
+# ---------------------------------------------------------------- agachar (pose baixa, espiando em volta)
+acao = nova_animacao("agachar", 48)
+for q in range(0, 49, 6):
+    p = q / 48
     chave(q, {
-        "corpo": dict(rot=(8, 0, 0), loc=(0, 0, -0.14), escala=(1.07, 0.88 + 0.012 * s, 1.07)),
-        "cabeca": dict(rot=(10, 0, 0), loc=(0, 0, -0.03)),
-        **abrir_asas(-3),
+        "corpo": dict(rot=(8, 3 * onda(p), 0), loc=(0, 0, -0.14),
+                      escala=(1.07, 0.88 + 0.015 * onda(p, 2), 1.07)),
+        "cabeca": dict(rot=(10, 0, 14 * onda(p, 1, 0.8)), loc=(0, 0, -0.03)),
+        **asas(-3, -3),
     })
-fechar_animacao(acao, 24, True)
+fechar_animacao(acao, 48, True)
 
 # ---------------------------------------------------------------- pular (prepara, bate asas, aterrissa)
 acao = nova_animacao("pular", 28, repete=False)
