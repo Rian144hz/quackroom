@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🦆 QUACKROOM
+# QUACKROOM
 
 **Terror cooperativo onde você só enxerga quando grasna.**
 **Mas todo barulho acorda o dono da casa.**
@@ -17,7 +17,7 @@
 
 ---
 
-## 🏚️ A história
+## A história
 
 Uma ninhada de patinhos se perdeu dentro de uma casa.
 
@@ -32,7 +32,7 @@ E aí… já era.
 
 ![Cenas do Quackroom](docs/midia/cenas.png)
 
-## 🔊 O diferencial: o quack é o seu sonar
+## O diferencial: o quack é o seu sonar
 
 Em quase todo jogo de terror com som a regra é **fique quieto**. No Quackroom é o contrário:
 **você só enxerga quando faz barulho.**
@@ -44,7 +44,7 @@ Em quase todo jogo de terror com som a regra é **fique quieto**. No Quackroom �
 
 > **A regra de ouro:** todo som revela, e todo som acorda.
 
-## 🎮 Como se joga
+## Como se joga
 
 | | |
 |---|---|
@@ -60,7 +60,7 @@ Em quase todo jogo de terror com som a regra é **fique quieto**. No Quackroom �
 **Controles:** WASD anda · mouse gira a câmera · Shift corre · Ctrl agacha ·
 Espaço pula (segure para planar) · clique = quack (segure para quack forte)
 
-## 🦆 O pato
+## O pato
 
 Em terceira pessoa, com animações de andar nas 4 direções (com gingado de pato), correr, pular
 e planar batendo as asas, agachar e grasnar. Modelo, esqueleto e animações são **gerados por
@@ -68,31 +68,31 @@ script** no Blender (`arte/pato/`).
 
 ![Gameplay](docs/midia/gameplay.gif)
 
-## 🗺️ Status
+## Status
 
 - [x] Conceito, design e direção de arte — [documento de design](docs/design/quackroom-design.md)
 - [x] Pato: modelo, esqueleto e 8 animações
 - [x] **Etapa 1 — Base:** projeto Godot, testes automáticos, pato importado
-- [ ] **Etapa 2 — Pato + online básico** *(pato em 3ª pessoa ✅ · rede em andamento)*
+- [ ] **Etapa 2 — Pato + online básico** *(pato em 3ª pessoa pronto · rede em andamento)*
 - [ ] Etapa 3 — Sonar (escuridão, shader, quack curto/forte, pisos)
 - [ ] Etapa 4 — O sonâmbulo (rotina, audição, barra de sono, caixa)
 - [ ] Etapa 5 — Patinhos, vitória e derrota
 - [ ] Etapa 6 — A casa: sala, cozinha, banheiro e quarto
 - [ ] Etapa 7 — Demo jogável no itch.io
 
-## 🙋 Procuro gente!
+## Procuro gente!
 
 Este é meu primeiro jogo e quero levá-lo até o lançamento. Procuro pessoas para somar em:
 
-- 🎨 **Arte 3D e modelagem** — móveis gigantes, o sonâmbulo, os patinhos
-- 🔊 **Som e música** — o som é *a* mecânica do jogo
-- 💻 **Programação (Godot / GDScript)** — rede, IA do sonâmbulo, shaders
-- 🗺️ **Level design** — os cômodos e as rotas de fuga
+- **Arte 3D e modelagem** — móveis gigantes, o sonâmbulo, os patinhos
+- **Som e música** — o som é *a* mecânica do jogo
+- **Programação (Godot / GDScript)** — rede, IA do sonâmbulo, shaders
+- **Level design** — os cômodos e as rotas de fuga
 
 **Quer entrar?** Abra uma [issue](../../issues) com o título **"Quero ajudar"** contando o que você
 curte fazer — ou comente **QUACK** no vídeo do TikTok.
 
-## 🛠️ Rodando o projeto
+## Rodando o projeto
 
 Precisa do [Godot 4.7](https://godotengine.org/download).
 
@@ -111,7 +111,7 @@ blender --background --factory-startup --python arte/pato/gerar_pato.py -- arte/
 blender --background --factory-startup --python arte/pato/animar_pato.py -- arte/pato sem-previa
 ```
 
-## 📁 Estrutura
+## Estrutura
 
 ```
 ├── jogo/                  projeto Godot (abra jogo/project.godot)
@@ -125,12 +125,12 @@ blender --background --factory-startup --python arte/pato/animar_pato.py -- arte
 └── docs/                  documento de design, referências e mídia
 ```
 
-## 🧰 Feito com
+## Feito com
 
 [Godot](https://godotengine.org) · [Blender](https://www.blender.org) ·
 Python + NumPy/SciPy (trilha e efeitos sintetizados) · ffmpeg
 
-## 📜 Licença
+## Licença
 
 © 2026 rian144hz — todos os direitos reservados. O código está aberto para leitura e para quem
 colabora com o projeto; veja [LICENSE](LICENSE).
