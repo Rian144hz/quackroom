@@ -1,0 +1,22 @@
+# Godot
+jogo/.godot/
+jogo/build/
+*.import.tmp
+
+# Blender
+*.blend1
+
+# Quadros intermediários de vídeo (regeneráveis pelos scripts)
+marketing/tiktok/quadros/
+marketing/tiktok/amostra/
+arte/pato/renders/anim/
+
+# Python
+__pycache__/
+jogo/testes/visual/*.mp4
+
+# Mídia regenerável pelos scripts de marketing (fica só o vídeo principal)
+marketing/tiktok/*.wav
+marketing/tiktok/narracao/
+marketing/tiktok/quackroom_tiktok_mudo.mp4
+marketing/tiktok/quackroom_tiktok_com_voz.mp4

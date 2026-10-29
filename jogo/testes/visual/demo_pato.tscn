@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://mundo/sala_teste/sala_teste.tscn" id="1_sala"]
+[ext_resource type="Script" path="res://testes/visual/demo_pato.gd" id="2_demo"]
+
+[node name="DemoPato" type="Node"]
+script = ExtResource("2_demo")
+
+[node name="SalaTeste" parent="." instance=ExtResource("1_sala")]
